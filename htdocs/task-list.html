@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Task List Viewer</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                background-color: #f4f4f9;
+                margin: 0;
+                padding: 0;
+                text-align: center;
+            }
+    
+            h1 {
+                color: #2c3e50;
+                margin-top: 20px;
+            }
+    
+            .task-list {
+                max-width: 800px;
+                margin: 20px auto;
+                padding: 20px;
+                background-color: white;
+                box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+                border-radius: 10px;
+            }
+    
+            .task-item {
+                padding: 10px 15px;
+                border-bottom: 1px solid #ddd;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+    
+            .task-item:last-child {
+                border-bottom: none;
+            }
+    
+            .task-item h2 {
+                margin: 0;
+                font-size: 18px;
+                color: #2c3e50;
+            }
+    
+            .task-item p {
+                margin: 0;
+                font-size: 14px;
+                color: #7f8c8d;
+            }
+    
+            .task-item button {
+                background-color: #3498db;
+                color: white;
+                border: none;
+                padding: 5px 10px;
+                border-radius: 3px;
+                cursor: pointer;
+            }
+    
+            .task-item button:hover {
+                background-color: #2980b9;
+            }
+        </style>
+    </head>
+    
+    <body>
+        <h1>Welcome to Task List Viewer</h1>
+    
+        <div class="task-list">
+            <div class="task-item">
+                <div>
+                    <h2>Task 1</h2>
+                    <p>Due Date: 2024-11-25</p>
+                </div>
+                <button>Details</button>
+            </div>
+            <div class="task-item">
+                <div>
+                    <h2>Task 2</h2>
+                    <p>Due Date: 2024-11-26</p>
+                </div>
+                <button>Details</button>
+            </div>
+            <div class="task-item">
+                <div>
+                    <h2>Task 3</h2>
+                    <p>Due Date: 2024-11-27</p>
+                </div>
+                <button>Details</button>
+            </div>
+        </div>
+    </body>
+    
+    </html>
+    
