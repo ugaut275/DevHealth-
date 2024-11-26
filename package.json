@@ -12,18 +12,17 @@
   "activationEvents": [],
   "main": "./extension.js",
   "contributes": {
-    "commands": [{
-      "command": "testdevhealth.helloWorld",
-      "title": "Hello World"
-    },
-    {
-      "command": "testdevhealth.viewTasks",
-      "category": "testdevhealth",
-      "title": "viewTasks"
-    }
-  
-  
-  ]
+    "commands": [
+      {
+        "command": "testdevhealth.helloWorld",
+        "title": "Hello World"
+      },
+      {
+        "command": "testdevhealth.viewTasks",
+        "category": "testdevhealth",
+        "title": "viewTasks"
+      }
+    ]
   },
   "scripts": {
     "lint": "eslint .",
@@ -38,5 +37,10 @@
     "eslint": "^9.13.0",
     "@vscode/test-cli": "^0.0.10",
     "@vscode/test-electron": "^2.4.1"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "express": "^4.21.1",
+    "promise-mysql": "^5.2.0"
   }
 }
