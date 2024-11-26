@@ -36,6 +36,7 @@ module.exports.register = (app, database) => {
         }
     })
 
+    //API call to retrieve a single user by userName
     app.get("/api/users/name/:name", async (req,res) =>{
         try {
             let name = req.params.name;
@@ -53,5 +54,29 @@ module.exports.register = (app, database) => {
         }
     })
 
+    app.post("/api/users", async (req,res) =>{
+        let {id,userName,userEmail,password} = req.body;
+        if(!id || !userName || !userEmail || !password){
+            return res.status(400).json({message: "Please input all the fields, id, userName, userEmail, and password are needed"});
+        }
+
+        try {
+            let result = await database.query(
+            'INSERT INTO user (id, userName, userEmail, password) VALUES (?,?,?,?,?)',
+            [id,userName,userEmail,password]
+            );
+
+            res.status(201).json({
+                message: 'User added successfully',
+                "id": id,
+                "userName":userName,
+                "userEmail": userEmail,
+                "password":password
+            });
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({message: "An error occured while adding the user"});
+        }
+    })
 
 }
