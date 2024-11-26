@@ -28,7 +28,8 @@
   "scripts": {
     "lint": "eslint .",
     "pretest": "npm run lint",
-    "test": "vscode-test"
+    "test": "vscode-test",
+    "start:api": "node api/app.js"
   },
   "devDependencies": {
     "@types/vscode": "^1.95.0",
