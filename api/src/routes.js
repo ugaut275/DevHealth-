@@ -4,7 +4,7 @@ module.exports.register = (app, database) => {
         res.status(200).send("This is running!").end();
     });
 
-    app.get("api/users", async (req,res) => {
+    app.get("/api/users", async (req,res) => {
         try {
             let query;
             query = database.query('SELECT * FROM user');
