@@ -62,7 +62,7 @@ module.exports.register = (app, database) => {
 
         try {
             let result = await database.query(
-            'INSERT INTO user (id, userName, userEmail, password) VALUES (?,?,?,?,?)',
+            'INSERT INTO user (id, userName, userEmail, password) VALUES (?,?,?,?)',
             [id,userName,userEmail,password]
             );
 
@@ -76,6 +76,48 @@ module.exports.register = (app, database) => {
         } catch (error) {
             console.error(error);
             res.status(500).json({message: "An error occured while adding the user"});
+        }
+    })
+
+    //API used to retrieve all items from the reminders table
+    app.get("/api/reminders", async (req,res) =>{
+        try {
+            let query; 
+            query = database.query("SELECT * FROM reminders");
+            const records = await query;
+            res.status(200).send(JSON.stringify(records)).end();
+        } catch (error) {
+            console.error("Database query failed:", error);
+            res.status(500).json({message: "An error occurred while fetching reminders."});
+        }
+    })
+
+    app.get("/api/reminders/:id", async (req,res) => {
+        try {
+            let id = req.params.id;
+            let query;
+            query = database.query("SELECT * FROM reminders WHERE reminder_id = ?",[id]);
+            const records = await query;
+
+            if(records.length === 0){
+                return res.status(404).json({message: "Reminder not found"})
+            }
+            res.status(200).send(JSON.stringify(records)).end();
+        } catch (error) {
+            console.error("Database query failed:", error);
+            res.status(500).json({message: "An error ocurred while looking for the reminder"});
+        }
+    })
+
+    app.post("api/reminders", async (req,res) => {
+        let {reminder_id,taskID,reminder_time,created_at} = req.body;
+        if(!reminder_id || !taskID || !reminder_time || !created_at){
+            return res.status(400).json({message: "Please input all the fields, reminder_id, taskID, reminder_time, and created_at are needed"});
+        }
+        try {
+            
+        } catch (error) {
+            
         }
     })
 
