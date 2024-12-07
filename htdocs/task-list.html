@@ -4,152 +4,184 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Task List Viewer</title>
-    <style>
-        body {
-            font-family: 'Arial', sans-serif;
-            background-color: #212529;
-            color: #f8f9fa;
-            margin: 0;
-            padding: 20px;
-        }
+    <script>
+        const vscode = acquireVsCodeApi();
+        async function getTasks(taskId){
+            try {
+                const response = await fetch(`http://35.225.30.86:8080/api/tasks/${taskId}`); 
+                if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                const data = await response.json();
+                displayTasks(data)
+                } catch (error) {
+                    console.error('Error fetching data:', error);
+                }
+                    }
+                    function displayTasks(tasks) {
+            const taskList = document.querySelector('.task-list');
+            taskList.innerHTML = ''; // Clear existing tasks
 
-        .task-container {
-            max-width: 600px;
-            margin: auto;
-            background-color: #343a40;
-            border-radius: 12px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-            padding: 20px;
-            position: relative;
+            tasks.forEach(task => {
+                const taskItem = document.createElement('div');
+                taskItem.classList.add('task-item');
+                taskItem.innerHTML = `
+                    <div class="task-details">
+                        <h3>${task.title}</h3>
+                        <p>Due Date: ${new Date(task.due_date).toLocaleDateString()}</p>
+                    </div>
+                    <div>
+                        <span>Status for ${task.title}:</span>
+              
+                      
+                     </div>
+                               <div class="status-buttons" data-task-id="${task.taskID}">
+                            <button class="status-button ${task.status === 1 ? 'Not-Started' : task.status === 2 ? 'In-Progress' : task.status === 3 ? 'Completed' : ''}" data-status="not-started">${task.status === 1 ? 'Not Started' : task.status === 2 ? 'In Progress' : task.status === 3 ? 'Completed' : ''}
+</button>            <button> Details </button>
+                        </div>
+                       
+                    
+                `;
+                taskList.appendChild(taskItem);
+            });
         }
-
-        .add-button {
-            max-width: fit-content;
-            background-color: #28a745;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            padding: 10px 15px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-
-        .add-button:hover {
-            background-color: #218838;
-        }
-
-        h1 {
-            text-align: center;
-            color: #f8f9fa;
-        }
-
-        .task-list {
-            list-style-type: none;
-            padding: 0;
-        }
-
-        .task-item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            background-color: #495057;
-            margin: 10px 0;
-            padding: 15px;
-            border-radius: 8px;
-            transition: background-color 0.3s, transform 0.3s;
-        }
-
-        .task-item:hover {
-            background-color: #1e7e34;
-            transform: translateY(-2px);
-        }
-
-        .task-details {
-            display: flex;
-            flex-direction: column;
-        }
-
-        button {
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            padding: 10px 15px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-
-        button:hover {
-            background-color: #0056b3;
-        }
-
-        select {
-            margin-left: 15px;
-            background-color: #495057;
-            color: #f8f9fa;
-            border: none;
-            border-radius: 5px;
-            padding: 5px;
-        }
-
-        label {
-            display: none;
-        }
-    </style>
+        document.addEventListener('DOMContentLoaded', () => {
+        
+            getTasks(1);
+        });
+    </script>
 </head>
 <body>
     <h1>Welcome to Task List Viewer</h1>
     <div class="task-container">
-      
+        <button class="add-button">Add Tasks</button>
         <div class="task-list">
-            <button class="add-button">Add Tasks</button>
-            <div class="task-item">
-                <div class="task-details">
-                    <h2>Task 1</h2>
-                    <p>Due Date: 2024-11-25</p>
-                </div>
-                <div>
-                    <label for="status-task-1">Select Status</label>
-                    <select id="status-task-1">
-                        <option value="not-started">Not Started</option>
-                        <option value="in-progress">In Progress</option>
-                        <option value="completed">Completed</option>
-                    </select>
-                    <button>Details</button>
-                </div>
-            </div>
-            <div class="task-item">
-                <div class="task-details">
-                    <h2>Task 2</h2>
-                    <p>Due Date: 2024-11-26</p>
-                </div>
-                <div>
-                    <label for="status-task-2">Select Status</label>
-                    <select id="status-task-2">
-                        <option value="not-started">Not Started</option>
-                        <option value="in-progress">In Progress</option>
-                        <option value="completed">Completed</option>
-                    </select>
-                    <button>Details</button>
-                </div>
-            </div>
-            <div class="task-item">
-                <div class="task-details">
-                    <h2>Task 3</h2>
-                    <p>Due Date: 2024-11-27</p>
-                </div>
-                <div>
-                    <label for="status-task-3">Select Status</label>
-                    <select id="status-task-3">
-                        <option value="not-started">Not Started</option>
-                        <option value="in-progress">In Progress</option>
-                        <option value="completed">Completed</option>
-                    </select>
-                    <button>Details</button>
-                </div>
-            </div>
-           
+            
+
+        
         </div>
     </div>
 </body>
+
+
+
+
+
+
+<style>
+    body {
+        font-family: 'Arial', sans-serif;
+        background-color: #212529;
+        color: #f8f9fa;
+        margin: 0;
+        padding: 20px;
+    }
+
+    .task-container {
+        max-width: 600px;
+        margin: auto;
+        background-color: #343a40;
+        border-radius: 12px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        padding: 20px;
+        position: relative;
+    }
+
+    .add-button {
+        max-width: fit-content;
+        background-color: #28a745;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        padding: 10px 15px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+
+    .add-button:hover {
+        background-color: #218838;
+    }
+
+    h1 {
+        text-align: center;
+        color: #f8f9fa;
+    }
+
+    .task-list {
+        list-style-type: none;
+        padding: 0;
+    }
+
+    .task-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background-color: #495057;
+        margin: 10px 0;
+        padding: 15px;
+        border-radius: 8px;
+        transition: background-color 0.3s, transform 0.3s;
+    }
+
+    .task-item:hover {
+        background-color: #1e7e34;
+        transform: translateY(-2px);
+    }
+
+    .task-details {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .status-buttons {
+        display: flex;
+        gap: 10px;
+        flex-direction: column;
+        
+    }
+
+    .status-button {
+        background-color: #000000;
+        color: #f8f9fa;
+        border: none;
+        border-radius: 5px;
+        padding: 10px 15px;
+        cursor: pointer;
+        margin-right: 0;
+        transition: background-color 0.3s, transform 0.3s;
+    }
+
+    .status-button:hover {
+        background-color: #46143d;
+        transform: translateY(-2px);
+    }
+
+    .status-button.In-Progress {
+        background-color: #bfd118;
+        transform: scale(1.05);
+    }
+    .status-button.Not-Started {
+        background-color: #ee8463;
+        transform: scale(1.05);
+    }
+    .status-button.Completed {
+        background-color: #10c73e;
+        transform: scale(1.05);
+    }
+
+    button {
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        padding: 10px 15px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+
+    button:hover {
+        background-color: #0056b3;
+    }
+</style>
+
 </html>
