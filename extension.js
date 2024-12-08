@@ -1,7 +1,7 @@
 const vscode = require('vscode');
 const fs = require('fs');
 const path = require('path');
-
+const reminders = require('./reminders');
 
 /**
  * @param {vscode.ExtensionContext} context
@@ -60,6 +60,22 @@ async function activate(context) {
         {enableScripts:true}
       );
       panel.webview.html = getWebViewContent();
+    })
+  );
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand('testdevhealth.viewReminders', async function () {
+      const panel = vscode.window.createWebviewPanel(
+        'page2',
+        'Reminder List',
+        vscode.ViewColumn.One,
+        { enableScripts: true }
+      );
+
+      let remindersData = await reminders.getReminders();
+      let reminderHTML = reminders.generateReminderHTML(remindersData);
+
+      panel.webview.html = reminders.getWebViewContent().replace('{{REMINDER_HTML}}', reminderHTML);
     })
   );
 }

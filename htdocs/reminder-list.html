@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Reminder List Viewer</title>
+    <script>
+      const vscode = acquireVsCodeApi();
+
+      document.addEventListener("DOMContentLoaded", () => {
+        vscode.postMessage({ command: "initializeReminders" });
+      });
+    </script>
+  </head>
+  <body>
+    <h1>Welcome to Reminder List Viewer</h1>
+    <div class="reminder-container">
+      <button class="add-button">Add Reminder</button>
+      <div class="reminder-list">{{REMINDER_HTML}}</div>
+    </div>
+  </body>
+
+  <style>
+    body {
+      font-family: "Arial", sans-serif;
+      background-color: #212529;
+      color: #f8f9fa;
+      margin: 0;
+      padding: 20px;
+    }
+
+    .reminder-container {
+      max-width: 600px;
+      margin: auto;
+      background-color: #343a40;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+      padding: 20px;
+      position: relative;
+    }
+
+    .add-button {
+      max-width: fit-content;
+      background-color: #28a745;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      padding: 10px 15px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    .add-button:hover {
+      background-color: #218838;
+    }
+
+    h1 {
+      text-align: center;
+      color: #f8f9fa;
+    }
+
+    .reminder-list {
+      list-style-type: none;
+      padding: 0;
+    }
+
+    .reminder-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background-color: #495057;
+      margin: 10px 0;
+      padding: 15px;
+      border-radius: 8px;
+      transition: background-color 0.3s, transform 0.3s;
+    }
+
+    .reminder-item:hover {
+      background-color: #1e7e34;
+      transform: translateY(-2px);
+    }
+
+    .reminder-details {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .status-buttons {
+      display: flex;
+      gap: 10px;
+      flex-direction: column;
+    }
+
+    .status-button {
+      background-color: #000000;
+      color: #f8f9fa;
+      border: none;
+      border-radius: 5px;
+      padding: 10px 15px;
+      cursor: pointer;
+      margin-right: 0;
+      transition: background-color 0.3s, transform 0.3s;
+    }
+
+    .status-button:hover {
+      background-color: #46143d;
+      transform: translateY(-2px);
+    }
+
+    .status-button.Pending {
+      background-color: #ee8463;
+      transform: scale(1.05);
+    }
+
+    .status-button.Completed {
+      background-color: #10c73e;
+      transform: scale(1.05);
+    }
+
+    button {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      padding: 10px 15px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+  </style>
+</html>
