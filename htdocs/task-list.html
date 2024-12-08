@@ -27,7 +27,7 @@
             },
             body: JSON.stringify(taskData)
         });
-
+        
         if (!response.ok) {
             throw new Error(`HTTP error! Status: ${response.status}`);
         }
@@ -40,35 +40,75 @@
 }
         function displayTasks(tasks) {
             const taskList = document.querySelector('.task-list');
-            taskList.innerHTML = ''; // Clear existing tasks
+            taskList.innerHTML = ''; 
 
             tasks.forEach(task => {
                 const taskItem = document.createElement('div');
                 taskItem.classList.add(`task-item-${task.priority}`);
                 taskItem.innerHTML = `
+                <div class="bofa-grid">
                     <div class="task-details">
                         <h3>${task.title}</h3>
-                        <p>Due Date: ${new Date(task.due_date).toLocaleDateString()}</p>
+                      
                     </div>
                     <div>
-              
+                      <button id="pofa" class = "cancel-button">❌</button>
                      </div>
+                    
+                    </div>
+                 <span>Due Date: ${new Date(task.due_date).toLocaleDateString()}</span>
                                <div class="status-buttons" data-task-id="${task.taskID}">
-                            <span class="status-button ${task.status === 1 ? 'Not-Started' : task.status === 2 ? 'In-Progress' : task.status === 3 ? 'Completed' : ''}" data-status="not-started">${task.status === 1 ? 'Not Started' : task.status === 2 ? 'In Progress' : task.status === 3 ? 'Completed' : ''}
-</span>            <button class="details-button"> Details </button>
+                            <span id="toDelete" style ="display:none;">${task.taskID}</span>
+                                     <p > ${task.description} </p>
+                            <span class="status-button ${task.status === 1 ? 'Not-Started' : task.status === 2 ? 'In-Progress' : task.status === 3 ? 'Completed' : ''}" data-status="not-started">${task.status === 1 ? 'Not Started' : task.status === 2 ? 'In Progress' : task.status === 3 ? 'Completed' : ''}</span>       
                         </div>
                        
                     
                 `;
                 taskList.appendChild(taskItem);
+                
+            });
+       
+            attachCancelButtonListeners(); 
+}
+
+        function attachCancelButtonListeners() {
+            
+            const taskList = document.querySelector('.task-list');
+            taskList.addEventListener('click', (event) => {
+                if (event.target.classList.contains('cancel-button')) {
+                    const taskItem = event.target.closest("div.task-item-Medium, div.task-item-High, div.task-item-Low");
+                    if (taskItem) {
+                        const details = taskItem.querySelector("#toDelete");
+                        const toDelete = details.textContent;
+                        const taskList = document.querySelector('.task-list');
+                        taskList.removeChild(taskItem);
+                        fetch(`http://35.225.30.86:8080/api/tasks/${details.textContent}`,{
+                            method: `DELETE`
+                        }).then(response => {
+                        if (response.ok) {
+                            ;
+                        } else {
+                            throw new Error('Failed to delete task');
+                        }
+                         })
+                        .catch(error => {
+                            console.error('Error:', error);
+                        });
+    }
+                    
+                }
             });
         }
+
         document.addEventListener('DOMContentLoaded', () => {
         
             getTasks(1);
         });
 
-        
+       
+   
+
     </script>
 </head>
 <body>
@@ -77,14 +117,14 @@
         <button class="add-button">Add Tasks</button>
         <div class="task-list">
         </div>
-        <button class="submit-button">Submit Tasks</button>
+        <p id="bofa">dofa</p>
+
     </div>
 
     <div class="task-container-hidden">
         <form id="taskForm">
             <label for="title">Title:</label>
             <input type="text" id="title" name="title" placeholder="Title"><br><br>
-
     
             <label for="priority">Priority:</label>
             <select id="priority" name="priority">
@@ -101,7 +141,7 @@
     
             <label for="dueDate">Due Date:</label>
             <input type="date" id="dueDate" name="dueDate"><br><br>
-    
+
             <label for="description">Description:</label>
             <input type="text" id="description" name="description" placeholder="Task Description"><br><br>
     
@@ -109,7 +149,6 @@
           
         </form>
         <button  class="submit-button" id="form-submit">Submit</button>
-        <!-- <p id="bofa"></p> -->
     </div>
     <script>
         const addButton = document.querySelector(".add-button");
@@ -143,6 +182,10 @@
         viewList.classList.add("hidden");
         listView.classList.toggle("hidden");
         });
+
+    
+
+
     </script>
 </body>
 
@@ -188,7 +231,17 @@ body {
     gap: 1.5rem;
     padding: 1rem;
 }
+p {
+    font-size: 1rem;
+    font-weight: 400;
+    transition: all 0.3s ease-in-out;
+}
 
+/* Add hover effect for paragraphs */
+p:hover {
+    background: rgba(61, 139, 253, 0.1); /* Slightly brighter highlight */
+    box-shadow: 0 2px 8px rgba(61, 139, 253, 0.15);
+}
 #taskForm label {
     font-size: 0.9rem;
     font-weight: 500;
@@ -257,11 +310,33 @@ body {
     background: rgba(255, 255, 255, 0.03);
     border: 1px solid rgba(255, 255, 255, 0.05);
     margin: 1rem 0;
-    padding: 1.25rem;
+    /* padding: 1.25rem; */
+    padding-left: 1.25rem;
+    padding-bottom: 1.25rem;
     border-radius: 12px;
     transition: all 0.3s ease;
 }
 
+.bofa-grid {
+    display: grid;
+    grid-template-columns: 1fr auto; /* Two columns: main content and button */
+    gap: 16px; /* Space between grid items */
+    align-items: center; /* Align items vertically */
+}
+.cancel-button {
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    color: #ff6b6b;
+    transition: transform 0.2s ease, color 0.2s ease;
+    transform: scale(0.9);
+
+}
+
+.cancel-button:hover {
+    color: #ff4d4d;
+    transform: scale(1.1);
+}
 .task-item-High {
     border-left: 4px solid #ff4d4d;
 }
