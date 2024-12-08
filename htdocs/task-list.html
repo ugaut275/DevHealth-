@@ -38,6 +38,21 @@
         console.error('Error adding task:', error);
     }
 }
+    async function updateTask(updateData){
+        try{
+            const response = await fetch(`http://35.225.30.86:8080/api/tasks/${updateData.taskID}`,{
+                method: `PUT`,
+                headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(updateData)
+            });
+        }
+        catch(error){
+            ;
+        }
+
+    }
         function displayTasks(tasks) {
             const taskList = document.querySelector('.task-list');
             taskList.innerHTML = ''; 
@@ -60,8 +75,13 @@
                                <div class="status-buttons" data-task-id="${task.taskID}">
                             <span id="toDelete" style ="display:none;">${task.taskID}</span>
                                      <p > ${task.description} </p>
-                            <span class="status-button ${task.status === 1 ? 'Not-Started' : task.status === 2 ? 'In-Progress' : task.status === 3 ? 'Completed' : ''}" data-status="not-started">${task.status === 1 ? 'Not Started' : task.status === 2 ? 'In Progress' : task.status === 3 ? 'Completed' : ''}</span>       
-                        </div>
+                    <select class="status-button ${task.status === 1 ? 'Not-Started' : task.status === 2 ? 'In-Progress' : task.status === 3 ? 'Completed' : ''}" value="${task.status}">
+                        <option value="1" ${task.status === 1 ? 'selected' : ''}>Not Started</option>
+                        <option value="2" ${task.status === 2 ? 'selected' : ''}>In Progress</option>
+                        <option value="3" ${task.status === 3 ? 'selected' : ''}>Completed</option>
+                    </select>                        
+            
+            </div>
                        
                     
                 `;
@@ -69,7 +89,8 @@
                 
             });
        
-            attachCancelButtonListeners(); 
+            attachCancelButtonListeners();
+            deleteButtonListeners(); 
 }
 
         function attachCancelButtonListeners() {
@@ -80,7 +101,6 @@
                     const taskItem = event.target.closest("div.task-item-Medium, div.task-item-High, div.task-item-Low");
                     if (taskItem) {
                         const details = taskItem.querySelector("#toDelete");
-                        const toDelete = details.textContent;
                         const taskList = document.querySelector('.task-list');
                         taskList.removeChild(taskItem);
                         fetch(`http://35.225.30.86:8080/api/tasks/${details.textContent}`,{
@@ -101,6 +121,32 @@
             });
         }
 
+        function deleteButtonListeners() {
+    const taskList = document.querySelector('.task-list');
+
+    taskList.addEventListener('change', (event) => {
+        if (event.target.classList.contains('status-button')) {
+            const taskItem = event.target.closest("div.task-item-Medium, div.task-item-High, div.task-item-Low");
+            if (taskItem) {
+                const taskId = taskItem.querySelector("#toDelete").textContent.trim();
+                const statusValue = event.target.value; 
+
+                const updateData = {
+                    taskID: taskId,
+                    status: parseInt(statusValue), 
+                };
+
+                updateTask(updateData);
+                
+                    getTasks(1);
+            }
+        }
+        
+    });
+ 
+}
+
+
         document.addEventListener('DOMContentLoaded', () => {
         
             getTasks(1);
@@ -117,7 +163,7 @@
         <button class="add-button">Add Tasks</button>
         <div class="task-list">
         </div>
-        <p id="bofa">dofa</p>
+        <!-- <p id="bofa">dofa</p> -->
 
     </div>
 
@@ -199,7 +245,7 @@
         display: none;
     }
 body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-family: 'Inter', sans-serif;
     background-color: #13151a;
     color: #f8f9fa;
     margin: 0;
@@ -355,6 +401,7 @@ p:hover {
     font-weight: 500;
     padding: 8px 16px;
     border-radius: 6px;
+    border: none;
     text-align: center;
 }
 
@@ -372,7 +419,10 @@ p:hover {
     background-color: #4dc6a3;
     color: white;
 }
-
+.status-button:hover {
+    transform: scale(1.1);
+    cursor: pointer;
+}
 /* Animations */
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(10px); }
