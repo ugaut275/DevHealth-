@@ -12,7 +12,6 @@ async function activate(context) {
  
   context.subscriptions.push(
     vscode.commands.registerCommand('testdevhealth.viewTasks', function () {
-      const message = vscode.window.showInformationMessage("asdfasdf")
       const panel = vscode.window.createWebviewPanel(
         'page1',
         'Task List',
