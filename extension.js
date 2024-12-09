@@ -46,8 +46,50 @@ async function activate(context) {
 
       panel.webview.html = webviewContent;
     })
+  );
+  
+  context.subscriptions.push(
+    vscode.commands.registerCommand('testdevhealth.login', async function () {
+      const panel = vscode.window.createWebviewPanel(
+        'loginPage',
+        'Login - DevHealth',
+        vscode.ViewColumn.One,
+        { enableScripts: true }
+      );
+  
+      panel.webview.html = getLoginPageContent(panel.webview, context.extensionUri);
+
+      panel.webview.onDidReceiveMessage(
+        (message) => {
+          if (message.command === "navigateToTaskList"){
+            panel.dispose();
+            vscode.commands.executeCommand("testdevhealth.viewTasks");
+          }if (message.command === "navigateToCreateUser"){
+            panel.dispose();
+            vscode.commands.executeCommand("testdevhealth.createUser");
+          }
+        },
+        undefined,
+        context.subscriptions
+      );
+    })
   );  
 }
+
+
+
+function getLoginPageContent(webview, extensionUri) {
+  try {
+    const filePath = vscode.Uri.joinPath(extensionUri, 'htdocs', 'login-page.html');
+    const loginHTML = fs.readFileSync(filePath.fsPath, 'utf8');
+    return loginHTML; 
+  } catch (error) {
+    console.error("Error reading the file:", error);
+    return `<html><body><h1>Error loading content</h1><p>${error.message}</p></body></html>`;
+  }
+}
+
+
 
 function getWebViewContent() {
   try {

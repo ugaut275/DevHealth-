@@ -26,6 +26,14 @@
         "command": "testdevhealth.viewReminders",
         "category": "testdevhealth",
         "title": "viewReminders"
+    },{
+        "command": "testdevhealth.login",
+        "category": "testdevhealth",
+        "title": "loginPage"
+    },{
+      "command": "testdevhealth.createUser",
+      "category": "testdevhealth",
+      "title": "addNewUser"
     }
     ]
   },
