@@ -1,7 +1,8 @@
 const vscode = require('vscode');
 const fs = require('fs');
 const path = require('path');
-
+// TODO: delete once login functioning
+const userId = 1;
 
 async function getReminders() {
   try {
@@ -17,7 +18,7 @@ async function getReminders() {
   }
 }
 
-async function generateReminderHTML(reminders, userId) {
+async function generateReminderHTML(reminders) {
   let htmlContent = '';
   const tasks = await getTasksById(userId);
 
@@ -72,8 +73,9 @@ function getWebViewContent(panel) {
 
 
 async function showAddMenu() {
+ const userId = 1;
   try {
-    const response = await fetch("http://35.225.30.86:8080/api/tasks/1");
+    const response = await fetch(`http://35.225.30.86:8080/api/tasks/${userId}`);
     if (!response.ok) {
       throw new Error(
         `Failed to fetch tasks: ${response.status} ${response.statusText}`
@@ -112,44 +114,8 @@ async function showAddMenu() {
 `;
 
     document.body.appendChild(addPopUp);
-
     const form = addPopUp.querySelector("#addReminderForm");
-
-    form.addEventListener("submit", async (event) => {
-      event.preventDefault();
-
-      const taskId = document.querySelector("#taskSelect").value;
-      const reminderDate = document.querySelector("#reminderDate").value;
-      const reminderTime = document.querySelector("#reminderTime").value;
-
-      if (taskId && reminderDate) {
-        console.log("Reminder Added:", {
-          taskId,
-          reminderDate,
-          reminderTime,
-        });
-        data = {
-          taskID: taskId,
-          reminder_time: reminderDate + " " + reminderTime + ":00",
-        };
-        try {
-          await fetch("http://35.225.30.86:8080/api/reminders", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(data),
-          });
-          // call generate html then update it -> container.htmlcontent = ''; container.append(generatehtml());
-          vscode.commands.executeCommand('workbench.action.reloadWindow');
-        } catch (error) {
-          console.log(error);
-        }
-        addPopUp.remove();
-      } else {
-        alert("Please fill out all fields.");
-      }
-    });
+    form.addEventListener("submit", async (event) => await addReminder(event, addPopUp));
 
     const cancelButton = addPopUp.querySelector(".cancel-button");
     cancelButton.addEventListener("click", () => {
@@ -157,9 +123,35 @@ async function showAddMenu() {
     });
   } catch (error) {
     console.error("Error loading tasks:", error);
-    alert("Failed to load tasks. Please try again later.");
   }
 }
+
+async function addReminder(event, addPopUp) {
+    event.preventDefault();
+    const taskId = document.querySelector("#taskSelect").value;
+    const reminderDate = document.querySelector("#reminderDate").value;
+    const reminderTime = document.querySelector("#reminderTime").value;
+
+    if (taskId && reminderDate) {
+      let newReminder = {
+        taskID: taskId,
+        reminder_time: reminderDate + " " + reminderTime + ":00",
+      };
+      try {
+        await fetch("http://35.225.30.86:8080/api/reminders", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(newReminder),
+        });
+        // TODO: update HTML
+      } catch (error) {
+        console.log(error);
+      }
+      addPopUp.remove();
+    }
+  }
 
 async function deleteReminder(reminderId) {
   try {
@@ -169,11 +161,7 @@ async function deleteReminder(reminderId) {
         "Content-Type": "application/json",
       },
     });
-    // call generate html then update it -> container.htmlcontent = ''; container.append(generatehtml());
-    const reminderContainer = document.querySelector(".reminder-container");
-    reminderContainer.htmlContent = "";
-    reminderContainer.appendChild(generateReminderHTML(getReminders(), 1))
-
+      // TODO: update HTML
   } catch (error) {
     console.log(error);
   }

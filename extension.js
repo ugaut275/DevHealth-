@@ -32,7 +32,7 @@ async function activate(context) {
       );
   
       let remindersData = await reminders.getReminders();
-      let reminderHTML = await reminders.generateReminderHTML(remindersData, 1);
+      let reminderHTML = await reminders.generateReminderHTML(remindersData);
       let webviewContent = reminders.getWebViewContent(panel).replace('{{REMINDER_HTML}}', reminderHTML);
 
       panel.webview.html = webviewContent;
