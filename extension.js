@@ -20,32 +20,23 @@ async function activate(context) {
   });
  
   context.subscriptions.push(
-    vscode.commands.registerCommand('testdevhealth.viewTasks', function () {
+    vscode.commands.registerCommand('testdevhealth.viewTasks', async function () {
       const panel = vscode.window.createWebviewPanel(
         'page1',
         'Task List',
         vscode.ViewColumn.One,
         {enableScripts:true}
       );
-      panel.webview.html = getWebViewContent();
+      let remindersData = await reminders.getReminders();
+      let reminderHTML = await reminders.generateReminderHTML(remindersData);
+      let webviewContent = getWebViewContent(panel).replace('{{REMINDER_HTML}}', reminderHTML);
+
+      panel.webview.html = webviewContent;
+      // panel.webview.html = getWebViewContent(panel);
     })
   );
 
-  context.subscriptions.push(
-    vscode.commands.registerCommand('testdevhealth.viewReminders', async function () {
-      const panel = vscode.window.createWebviewPanel(
-        'page2',
-        'Reminder List',
-        vscode.ViewColumn.One,
-        { enableScripts: true }
-      );
-  
-      let remindersData = await reminders.getReminders();
-      let reminderHTML = await reminders.generateReminderHTML(remindersData);
-      let webviewContent = reminders.getWebViewContent(panel).replace('{{REMINDER_HTML}}', reminderHTML);
-
-      panel.webview.html = webviewContent;
-    })
+}
   );
   
   context.subscriptions.push(
@@ -91,11 +82,17 @@ function getLoginPageContent(webview, extensionUri) {
 
 
 
-function getWebViewContent() {
+function getWebViewContent(panel) {
   try {
     const filePath = path.join(__dirname, 'htdocs', 'task-list.html');
     const content = fs.readFileSync(filePath, 'utf8');
-    return content;
+    const scriptUri = panel.webview.asWebviewUri(vscode.Uri.file(path.join(__dirname, 'app.js')));
+    
+    return content.replace('</body>', `<script src="${scriptUri}"></script></script><script>
+        document.addEventListener('DOMContentLoaded', () => {
+            getTasks(1);
+        });
+    </script></body>`);
   } catch (error) {
     console.error("Error reading the file:", error);
     return `<html><body><h1>Error loading content</h1><p>${error.message}</p></body></html>`;

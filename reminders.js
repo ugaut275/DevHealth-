@@ -186,6 +186,34 @@ async function checkForReminders(userId) {
   }
 }
 
+async function toggleReminderView() {
+  const listView = document.querySelector('.task-container');
+  const calendarView = document.querySelector('.task-container-calendar-view');
+  const reminderView = document.querySelector('.reminder-container');
+
+  if (reminderView.classList.contains('hidden')) {
+    reminderView.classList.remove('hidden');
+    listView.classList.add('hidden');
+    calendarView.classList.add('hidden');
+    await showReminders();
+  } else {
+      reminderView.classList.add('hidden');
+      if (!calendarView.classList.contains('hidden')) {
+          calendarView.classList.add('hidden');
+      }
+      listView.classList.remove('hidden');
+  }
+}
+
+async function showReminders(){
+  let remindersData = await reminders.getReminders();
+  let reminderHTML = await reminders.generateReminderHTML(remindersData);
+  let reminderContainer = document.querySelector(".reminder-container");
+  let reminders = 
+  reminderContainer.appendChild()
+
+}
+
 module.exports = {
   getReminders,
   generateReminderHTML,
