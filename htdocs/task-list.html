@@ -5,7 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Task List Viewer</title>
     <script>
-        const vscode = acquireVsCodeApi();
+        //const vscode = acquireVsCodeApi();
+        let displayedYear = new Date().getFullYear();
+        let displayedMonth = new Date().getMonth();
         async function getTasks(taskId){
             try {
                 const response = await fetch(`http://35.225.30.86:8080/api/tasks/${taskId}`); 
@@ -14,8 +16,10 @@
                 }
                 const data = await response.json();
                 displayTasks(data)
+                window.allTasks = data;
                 } catch (error) {
                     console.error('Error fetching data:', error);
+                    window.allTasks = [];
                 }
                     }
         async function addTask(taskData) {
@@ -152,8 +156,152 @@
             getTasks(1);
         });
 
-       
-   
+        function displayCalendarView(tasks, year, month) {
+            tasks = tasks || [];
+
+            const currentDate = new Date();
+            const currentYear = currentDate.getFullYear();
+            const currentMonth = currentDate.getMonth();
+            const currentAbs = currentYear * 12 + currentMonth;
+            const displayedAbs = year * 12 + month;
+            if (displayedAbs < currentAbs - 12 || displayedAbs > currentAbs + 12) {
+                return;
+            }
+
+            const calendarContainer = document.querySelector('.task-list-calendar');
+            calendarContainer.innerHTML = '';
+
+            const monthNames = ["January", "February", "March", "April", "May", "June", 
+                                "July", "August", "September", "October", "November", "December"];
+
+            const calendarHeader = document.createElement('h2');
+            calendarHeader.textContent = `${monthNames[month]} ${year}`;
+            calendarContainer.appendChild(calendarHeader);
+
+            const navContainer = document.createElement('div');
+            navContainer.classList.add('calendar-nav');
+
+            const prevBtn = document.createElement('button');
+            prevBtn.textContent = 'Prev';
+            prevBtn.classList.add('date-view-button');
+            prevBtn.addEventListener('click', () => {
+                let newYear = displayedYear;
+                let newMonth = displayedMonth - 1;
+                if (newMonth < 0) {
+                    newMonth = 11;
+                    newYear -= 1;
+                }
+                let newAbs = newYear * 12 + newMonth;
+                if (newAbs >= currentYear * 12 + currentMonth - 12) {
+                    displayedYear = newYear;
+                    displayedMonth = newMonth;
+                    displayCalendarView(window.allTasks, displayedYear, displayedMonth);
+                }
+            });
+
+            const nextBtn = document.createElement('button');
+            nextBtn.textContent = 'Next';
+            nextBtn.classList.add('date-view-button');
+            nextBtn.addEventListener('click', () => {
+                let newYear = displayedYear;
+                let newMonth = displayedMonth + 1;
+                if (newMonth > 11) {
+                    newMonth = 0;
+                    newYear += 1;
+                }
+                let newAbs = newYear * 12 + newMonth;
+                if (newAbs <= currentYear * 12 + currentMonth + 12) {
+                    displayedYear = newYear;
+                    displayedMonth = newMonth;
+                    displayCalendarView(window.allTasks, displayedYear, displayedMonth);
+                }
+            });
+
+            navContainer.appendChild(prevBtn);
+            navContainer.appendChild(nextBtn);
+            calendarContainer.appendChild(navContainer);
+
+            const firstDayOfMonth = new Date(year, month, 1).getDay(); 
+            const daysInMonth = new Date(year, month+1, 0).getDate();
+
+            const table = document.createElement('table');
+            table.classList.add('calendar-table');
+
+            const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+            const headerRow = document.createElement('tr');
+            daysOfWeek.forEach(day => {
+                const th = document.createElement('th');
+                th.textContent = day;
+                headerRow.appendChild(th);
+            });
+            table.appendChild(headerRow);
+
+            const tasksByDate = {};
+            tasks.forEach(task => {
+                const dateKey = new Date(task.due_date).toDateString(); 
+                if (!tasksByDate[dateKey]) {
+                    tasksByDate[dateKey] = [];
+                }
+                tasksByDate[dateKey].push(task);
+            });
+
+            let date = 1;
+            for (let i = 0; i < 6; i++) {
+                const row = document.createElement('tr');
+                for (let j = 0; j < 7; j++) {
+                    const cell = document.createElement('td');
+                    if ((i === 0 && j < firstDayOfMonth) || date > daysInMonth) {
+                        cell.classList.add('empty-cell');
+                    } else {
+                        cell.classList.add('calendar-day');
+                        const cellDate = new Date(year, month, date);
+                        const dateLabel = document.createElement('div');
+                        dateLabel.classList.add('date-label');
+                        dateLabel.textContent = date;
+                        cell.appendChild(dateLabel);
+
+                        const tasksToday = tasksByDate[cellDate.toDateString()];
+                        if (tasksToday && tasksToday.length > 0) {
+                            tasksToday.forEach(task => {
+                                const taskDiv = document.createElement('div');
+                                taskDiv.classList.add(`task-item-${task.priority}`, 'calendar-task-item');
+                                taskDiv.textContent = task.title; 
+                                cell.appendChild(taskDiv);
+                            });
+                        }
+
+                        date++;
+                    }
+                    row.appendChild(cell);
+                }
+                table.appendChild(row);
+                if (date > daysInMonth) break; 
+            }
+
+            calendarContainer.appendChild(table);
+        }
+
+        function toggleCalendarView() {
+            const listView = document.querySelector('.task-container');
+            const calendarView = document.querySelector('.task-container-calendar-view');
+
+            if (calendarView.classList.contains('hidden')) {
+                calendarView.classList.remove('hidden');
+                listView.classList.add('hidden');
+                displayCalendarView(window.allTasks || [], displayedYear, displayedMonth);
+            } else {
+                calendarView.classList.add('hidden');
+                listView.classList.remove('hidden');
+            }
+        }
+
+        function openTaskFormView() {
+            const calendarView = document.querySelector('.task-container-calendar-view');
+            const viewList = document.querySelector('.task-container-hidden');
+
+            calendarView.classList.add('hidden');
+            viewList.classList.remove('hidden');
+        }
 
     </script>
 </head>
@@ -161,10 +309,16 @@
     <h1>Welcome to Task List Viewer</h1>
     <div class="task-container">
         <button class="add-button">Add Tasks</button>
+        <button class="date-view-button" onclick="toggleCalendarView()">Calendar View</button>
         <div class="task-list">
         </div>
         <!-- <p id="bofa">dofa</p> -->
+    </div>
 
+    <div class="task-container-calendar-view hidden">
+        <button class="add-button" onclick="openTaskFormView()">Add Tasks</button>
+        <button class="date-view-button" onclick="toggleCalendarView()">List View</button>
+        <div class="task-list-calendar"></div>
     </div>
 
     <div class="task-container-hidden">
@@ -190,9 +344,6 @@
 
             <label for="description">Description:</label>
             <input type="text" id="description" name="description" placeholder="Task Description"><br><br>
-    
-            
-          
         </form>
         <button  class="submit-button" id="form-submit">Submit</button>
     </div>
@@ -202,11 +353,8 @@
         const viewList = document.querySelector(".task-container-hidden");
         viewList.classList.toggle("hidden");
         addButton.addEventListener("click",()=>{
-           
-           
             listView.classList.toggle("hidden");
             viewList.classList.toggle("hidden");
-   
         });
         const submitButton = document.querySelector("#form-submit");
 
@@ -229,16 +377,7 @@
         listView.classList.toggle("hidden");
         });
 
-    
-
-
     </script>
-</body>
-
-
-
-
-
 
 <style>
     .hidden{
@@ -254,7 +393,7 @@ body {
 }
 
 /* Container Styles */
-.task-container, .task-container-hidden {
+.task-container, .task-container-hidden, .task-container-calendar-view {
     max-width: 800px;
     margin: 2rem auto;
     background-color: #1c1f26;
@@ -322,7 +461,7 @@ p:hover {
 }
 
 /* Button Styles */
-.add-button, .submit-button, #taskForm button{
+.add-button, .submit-button, #taskForm button, .date-view-button{
     background: linear-gradient(135deg, #3d8bfd 0%, #2d6cfd 100%);
     color: white;
     border: none;
@@ -346,7 +485,7 @@ p:hover {
     max-width: fit-content;
     margin-left: 5px;
 }
-.add-button:hover, .submit-button:hover, #taskForm button:hover, .details-button:hover {
+.add-button:hover, .submit-button:hover, #taskForm button:hover, .details-button:hover, .date-view-button:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(61, 139, 253, 0.3);
 }
@@ -423,6 +562,61 @@ p:hover {
     transform: scale(1.1);
     cursor: pointer;
 }
+
+/* Calendar Styles */
+.task-list-calendar {
+    text-align: center;
+}
+
+.calendar-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+}
+
+.calendar-table th,
+.calendar-table td {
+    border: 1px solid #2c303a;
+    width: 14.28%;
+    vertical-align: top;
+    padding: 0.5rem;
+}
+
+.calendar-table th {
+    background: #2d6cfd;
+    padding: 0.5rem;
+}
+
+.empty-cell {
+    background: #252832;
+}
+
+.calendar-day {
+    background: rgba(255, 255, 255, 0.03);
+    position: relative;
+    min-height: 100px;
+}
+
+.date-label {
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.calendar-task-item {
+    font-size: 0.9rem;
+    margin: 0.25rem 0;
+    padding: 0.25rem;
+    border-radius: 4px;
+    text-align: left;
+}
+
+.calendar-nav {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
 /* Animations */
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(10px); }
