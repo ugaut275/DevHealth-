@@ -7,8 +7,17 @@ const reminders = require('./reminders');
  * @param {vscode.ExtensionContext} context
  */
 async function activate(context) {
-  console.log('Congratulations, your extension "testdevhealth" is now active!');
+  let interval = setInterval(async () => {
+    let reminderTaskId = await reminders.checkForReminders();
+    if (reminderTaskId) {
+      let task = await reminders.getTasksById(reminderTaskId)
+      vscode.window.showInformationMessage(`Reminder: ${task.title}. ${task.description}`);
+    }
+  }, 5000);
 
+  context.subscriptions.push({
+    dispose: () => clearInterval(interval),
+  });
  
   context.subscriptions.push(
     vscode.commands.registerCommand('testdevhealth.viewTasks', function () {

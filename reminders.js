@@ -40,8 +40,6 @@ async function generateReminderHTML(reminders) {
   return htmlContent || '<p>No reminders available.</p>';
 }
 
-
-
 async function getTasksById(id) {
   try {
     const response = await fetch(`http://35.225.30.86:8080/api/tasks/${id}`);
@@ -68,9 +66,6 @@ function getWebViewContent(panel) {
     return `<html><body><h1>Error loading content</h1><p>${error.message}</p></body></html>`;
   }
 }
-
-
-
 
 async function showAddMenu() {
  const userId = 1;
@@ -131,12 +126,9 @@ async function addReminder(event, addPopUp) {
     const taskId = document.querySelector("#taskSelect").value;
     const reminderDate = document.querySelector("#reminderDate").value;
     const reminderTime = document.querySelector("#reminderTime").value;
-
-    if (taskId && reminderDate) {
-      let newReminder = {
-        taskID: taskId,
-        reminder_time: reminderDate + " " + reminderTime + ":00",
-      };
+    
+    if (taskId && reminderDate && reminderTime) {
+      let newReminder = createReminder(taskId, reminderDate, reminderTime);
       try {
         await fetch("http://35.225.30.86:8080/api/reminders", {
           method: "POST",
@@ -153,6 +145,16 @@ async function addReminder(event, addPopUp) {
     }
   }
 
+function createReminder(taskId, reminderDate, reminderTime) {
+  let reminderDateTime = new Date(`${reminderDate}T${reminderTime}:00`);
+  reminderDateTime.setHours(reminderDateTime.getHours()); // i wish i knew why the db is adding 5 hours to anything i add, but because i dont, this will have to do.
+  reminderDateTime = reminderDateTime.toISOString().slice(0, 19).replace("T", " ");
+  return {
+    taskID: taskId,
+    reminder_time: reminderDateTime,
+  };
+}
+
 async function deleteReminder(reminderId) {
   try {
     await fetch(`http://35.225.30.86:8080/api/reminders/${reminderId}`, {
@@ -167,8 +169,21 @@ async function deleteReminder(reminderId) {
   }
 }
 
+async function checkForReminders() {
+  let currentDate = new Date();
+  let reminderData = await getReminders()
+  for (let reminder of reminderData) {
+    let reminderDate = new Date(reminder.reminder_id);
+    let timeDifference = Math.abs(currentDate - reminderDate);
+    if (timeDifference <= 60000){
+      return reminder.taskID;
+    }
+  }
+}
+
 module.exports = {
   getReminders,
   generateReminderHTML,
-  getWebViewContent
+  getWebViewContent,
+  checkForReminders
 };
