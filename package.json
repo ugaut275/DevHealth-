@@ -21,7 +21,12 @@
         "command": "testdevhealth.viewTasks",
         "category": "testdevhealth",
         "title": "viewTasks"
-      }
+      },
+      {
+        "command": "testdevhealth.viewReminders",
+        "category": "testdevhealth",
+        "title": "viewReminders"
+    }
     ]
   },
   "scripts": {
