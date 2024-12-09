@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Task List Viewer</title>
     <script>
-        //const vscode = acquireVsCodeApi();
+        const vscode = acquireVsCodeApi();
         let displayedYear = new Date().getFullYear();
         let displayedMonth = new Date().getMonth();
         async function getTasks(taskId){
