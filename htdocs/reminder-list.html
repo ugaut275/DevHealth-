@@ -4,18 +4,12 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Reminder List Viewer</title>
-    <script>
-      const vscode = acquireVsCodeApi();
-
-      document.addEventListener("DOMContentLoaded", () => {
-        vscode.postMessage({ command: "initializeReminders" });
-      });
-    </script>
+    <script src="${scriptUri}"></script>
   </head>
   <body>
     <h1>Welcome to Reminder List Viewer</h1>
     <div class="reminder-container">
-      <button class="add-button">Add Reminder</button>
+      <button class="add-button" onclick="showAddMenu()">Add Reminder</button>
       <div class="reminder-list">{{REMINDER_HTML}}</div>
     </div>
   </body>
@@ -129,6 +123,86 @@
 
     button:hover {
       background-color: #0056b3;
+    }
+
+    /* addPopUp styles */
+    .addPopUp {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background-color: rgba(0, 0, 0, 0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+
+    .addPopUp-content {
+      background-color: #343a40;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+      width: 90%;
+      max-width: 400px;
+      color: #f8f9fa;
+      text-align: center;
+    }
+
+    .addPopUp-content h2 {
+      margin-bottom: 20px;
+    }
+
+    .addPopUp-content form {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .addPopUp-content label {
+      font-weight: bold;
+      text-align: left;
+    }
+
+    .addPopUp-content input,
+    .addPopUp-content select {
+      width: 100%;
+      padding: 8px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+
+    .addPopUp-buttons {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .save-button {
+      background-color: #28a745;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      padding: 10px 15px;
+      cursor: pointer;
+    }
+
+    .save-button:hover {
+      background-color: #218838;
+    }
+
+    .cancel-button {
+      background-color: #dc3545;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      padding: 10px 15px;
+      cursor: pointer;
+    }
+
+    .cancel-button:hover {
+      background-color: #c82333;
     }
   </style>
 </html>

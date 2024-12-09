@@ -30,13 +30,14 @@ async function activate(context) {
         vscode.ViewColumn.One,
         { enableScripts: true }
       );
-
+  
       let remindersData = await reminders.getReminders();
-      let reminderHTML = reminders.generateReminderHTML(remindersData);
+      let reminderHTML = await reminders.generateReminderHTML(remindersData, 1);
+      let webviewContent = reminders.getWebViewContent(panel).replace('{{REMINDER_HTML}}', reminderHTML);
 
-      panel.webview.html = reminders.getWebViewContent().replace('{{REMINDER_HTML}}', reminderHTML);
+      panel.webview.html = webviewContent;
     })
-  );
+  );  
 }
 
 function getWebViewContent() {
