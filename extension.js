@@ -7,10 +7,10 @@ const reminders = require('./reminders');
  * @param {vscode.ExtensionContext} context
  */
 async function activate(context) {
+
   let interval = setInterval(async () => {
-    let reminderTaskId = await reminders.checkForReminders();
-    if (reminderTaskId) {
-      let task = await reminders.getTasksById(reminderTaskId)
+    let task = await reminders.checkForReminders(1);
+    if (task) {
       vscode.window.showInformationMessage(`Reminder: ${task.title}. ${task.description}`);
     }
   }, 5000);

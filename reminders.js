@@ -20,7 +20,7 @@ async function getReminders() {
 
 async function generateReminderHTML(reminders) {
   let htmlContent = '';
-  const tasks = await getTasksById(userId);
+  const tasks = await getTasksByUserId(userId);
 
   for (const reminder of reminders) {
     const task = await tasks.find(t => t.taskID === reminder.taskID);
@@ -40,7 +40,7 @@ async function generateReminderHTML(reminders) {
   return htmlContent || '<p>No reminders available.</p>';
 }
 
-async function getTasksById(id) {
+async function getTasksByUserId(id) {
   try {
     const response = await fetch(`http://35.225.30.86:8080/api/tasks/${id}`);
     if (!response.ok) {
@@ -169,14 +169,19 @@ async function deleteReminder(reminderId) {
   }
 }
 
-async function checkForReminders() {
+async function checkForReminders(userId) {
   let currentDate = new Date();
-  let reminderData = await getReminders()
+  let tasks = await getTasksByUserId(1);
+  let reminderData = await getReminders();
   for (let reminder of reminderData) {
-    let reminderDate = new Date(reminder.reminder_id);
-    let timeDifference = Math.abs(currentDate - reminderDate);
-    if (timeDifference <= 60000){
-      return reminder.taskID;
+    for (let task of tasks){
+      if (reminder.taskID === task.taskID && task.user_id === userId){
+        let reminderDate = new Date(reminder.reminder_time);
+        if (currentDate >= reminderDate) {
+          deleteReminder(reminder.reminder_id)
+          return task;
+        }
+      }
     }
   }
 }
@@ -185,5 +190,6 @@ module.exports = {
   getReminders,
   generateReminderHTML,
   getWebViewContent,
-  checkForReminders
+  checkForReminders,
+  getTasksByUserId
 };
