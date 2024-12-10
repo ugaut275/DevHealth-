@@ -1,3 +1,4 @@
+//*This class is used to register the commands and allocate webviews for each command according to the html documents created. *//
 const vscode = require('vscode');
 const fs = require('fs');
 const path = require('path');
@@ -7,7 +8,8 @@ const reminders = require('./reminders');
  * @param {vscode.ExtensionContext} context
  */
 async function activate(context) {
-
+  
+  //This is for the interval spacing to check whether a reminder time is passed and if so it will display them accordingly 
   let interval = setInterval(async () => {
     let task = await reminders.checkForReminders(1);
     if (task) {
@@ -18,7 +20,8 @@ async function activate(context) {
   context.subscriptions.push({
     dispose: () => clearInterval(interval),
   });
- 
+  
+  //This registers the viewTasks command and provides the proper html document for the panel to go to when the command is ran
   context.subscriptions.push(
     vscode.commands.registerCommand('testdevhealth.viewTasks', async function () {
       const panel = vscode.window.createWebviewPanel(
@@ -36,7 +39,7 @@ async function activate(context) {
     })
   );
 
-    // Register the login command
+    //This registers the login command and provides the proper html document for the panel to go to when the command is ran
     context.subscriptions.push(
       vscode.commands.registerCommand('testdevhealth.login', async function () {
         const panel = vscode.window.createWebviewPanel(
@@ -45,9 +48,11 @@ async function activate(context) {
           vscode.ViewColumn.One,
           { enableScripts: true }
         );
-  
+        
+        //Retrieves the proper html document to change the webview
         panel.webview.html = getLoginPageContent(panel.webview, context.extensionUri);
-  
+        
+        //This block is used to check the redirect commands in the login page script and get rid of the current panel and move it to the next panel by running the command.
         panel.webview.onDidReceiveMessage(
           (message) => {
             if (message.command === "navigateToTaskList") {
@@ -63,7 +68,8 @@ async function activate(context) {
         );
       })
     );
-    
+
+    //This registers the createUser command and provides the proper html document for the panel to go to when the command is ran
     context.subscriptions.push(
       vscode.commands.registerCommand('testdevhealth.createUser', async function() {
         const panel = vscode.window.createWebviewPanel(
@@ -72,9 +78,10 @@ async function activate(context) {
           vscode.ViewColumn.One,
           {enableScripts: true}
         );
-
+        //Retrieves the proper html document to change the webview
         panel.webview.html = getCreateUserPageContent(panel.webview,context.extensionUri);
 
+        //This block is used to check the redirect commands in the create user page script and remove the current panel and move it to the next panel by running the command 
         panel.webview.onDidReceiveMessage(
 
           (message) => {
@@ -88,7 +95,13 @@ async function activate(context) {
         );
       })
     );
-  
+    
+    /**
+     * Gets the proper html path for the new-user page 
+     * @param {*} webview 
+     * @param {*} extensionUri 
+     * @returns html path 
+     */
     function getCreateUserPageContent(webview, extensionUri) {
       try {
         const filePath = vscode.Uri.joinPath(extensionUri, 'htdocs', 'new-user.html');
@@ -101,7 +114,10 @@ async function activate(context) {
     }
   
   /**
-   * Get content for the login page
+   * Gets the proper html path for the login-page 
+   * @param {*} webview 
+   * @param {*} extensionUri 
+   * @returns html path
    */
   function getLoginPageContent(webview, extensionUri) {
     try {
@@ -116,6 +132,11 @@ async function activate(context) {
 
 }
 
+/**
+ * Generates the html content for a webview and the proper path
+ * @param {*} panel 
+ * @returns The html content fro the webview, with the JS script injected
+ */
 function getWebViewContent(panel) {
   try {
     const filePath = path.join(__dirname, 'htdocs', 'task-list.html');
