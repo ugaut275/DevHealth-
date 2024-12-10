@@ -2,151 +2,149 @@ const vscode = acquireVsCodeApi();
 let displayedYear = new Date().getFullYear();
 let displayedMonth = new Date().getMonth();
 
-async function getTasks(taskId){
-    try {
-        const response = await fetch(`http://35.225.30.86:8080/api/tasks/${taskId}`); 
-        if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-        const data = await response.json();
-        displayTasks(data);
-        const dofa = data.filter(item => item.status !== 3);
+// Fetches a  task by its ID, processes the response, filters tasks based on status, 
+// and stores the filtered tasks in a global variable.
+async function getTasks(taskId) {
+  try {
+      const response = await fetch(`http://35.225.30.86:8080/api/tasks/${taskId}`);
+      if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+      const data = await response.json();
+      displayTasks(data);
+      const dofa = data.filter(item => item.status !== 3);
+      window.allTasks = dofa;
+  } catch (error) {
+      console.error('Error fetching data:', error);
+      window.allTasks = [];
+  }
+}
 
-        window.allTasks = dofa;
-        } catch (error) {
-            console.error('Error fetching data:', error);
-            window.allTasks = [];
-        }
-            }
-
+// Adds a new task by sending the task data to the server via a POST request.
 async function addTask(taskData) {
-    try {
-    const response = await fetch('http://35.225.30.86:8080/api/tasks', {
-    method: 'POST',
-    headers: {
-        'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(taskData)
-});
+  try {
+      const response = await fetch('http://35.225.30.86:8080/api/tasks', {
+          method: 'POST',
+          headers: {
+              'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(taskData)
+      });
 
-if (!response.ok) {
-    throw new Error(`HTTP error! Status: ${response.status}`);
-}
+      if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+      }
 
-const data = await response.json();
-console.log('Task added successfully:', data);
-} catch (error) {
-console.error('Error adding task:', error);
-}
-}
-
-async function updateTask(updateData){
-try{
-    const response = await fetch(`http://35.225.30.86:8080/api/tasks/${updateData.taskID}`,{
-        method: `PUT`,
-        headers: {
-        'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(updateData)
-    });
-}
-catch(error){
-    ;
+      const data = await response.json();
+      console.log('Task added successfully:', data);
+  } catch (error) {
+      console.error('Error adding task:', error);
+  }
 }
 
+// Updates an existing task with new data by sending a PUT request to the server.
+async function updateTask(updateData) {
+  try {
+      const response = await fetch(`http://35.225.30.86:8080/api/tasks/${updateData.taskID}`, {
+          method: 'PUT',
+          headers: {
+              'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(updateData)
+      });
+  } catch (error) {
+      // Error handling is not implemented here.
+  }
 }
+
+// Displays a list of tasks in the DOM, creating HTML elements for each task and appending them to the task list.
 function displayTasks(tasks) {
-    const taskList = document.querySelector('.task-list');
-    taskList.innerHTML = ''; 
+  const taskList = document.querySelector('.task-list');
+  taskList.innerHTML = ''; // Clears existing tasks in the list
 
-    tasks.forEach(task => {
-        const taskItem = document.createElement('div');
-        taskItem.classList.add(`task-item-${task.priority}`);
-        taskItem.innerHTML = `
-        <div class="bofa-grid">
-            <div class="task-details">
-                <h3>${task.title}</h3>
-              
-            </div>
-            <div>
-              <button id="pofa" class = "cancel-button">❌</button>
-             </div>
-            
-            </div>
-         <span>Due Date: ${new Date(task.due_date).toLocaleDateString()}</span>
-                       <div class="status-buttons" data-task-id="${task.taskID}">
-                    <span id="toDelete" style ="display:none;">${task.taskID}</span>
-                             <p > ${task.description} </p>
-            <select class="status-button ${task.status === 1 ? 'Not-Started' : task.status === 2 ? 'In-Progress' : task.status === 3 ? 'Completed' : ''}" value="${task.status}">
-                <option value="1" ${task.status === 1 ? 'selected' : ''}>Not Started</option>
-                <option value="2" ${task.status === 2 ? 'selected' : ''}>In Progress</option>
-                <option value="3" ${task.status === 3 ? 'selected' : ''}>Completed</option>
-            </select>                        
-    
-    </div>
-               
-            
-        `;
-        taskList.appendChild(taskItem);
-        
-    });
+  // Creates a new task item for each task and appends it to the task list.
+  tasks.forEach(task => {
+      const taskItem = document.createElement('div');
+      taskItem.classList.add(`task-item-${task.priority}`);
+      taskItem.innerHTML = `
+      <div class="bofa-grid">
+          <div class="task-details">
+              <h3>${task.title}</h3>
+          </div>
+          <div>
+            <button id="pofa" class = "cancel-button">❌</button>
+          </div>
+      </div>
+      <span>Due Date: ${new Date(task.due_date).toLocaleDateString()}</span>
+      <div class="status-buttons" data-task-id="${task.taskID}">
+          <span id="toDelete" style ="display:none;">${task.taskID}</span>
+          <p>${task.description}</p>
+          <select class="status-button ${task.status === 1 ? 'Not-Started' : task.status === 2 ? 'In-Progress' : task.status === 3 ? 'Completed' : ''}" value="${task.status}">
+              <option value="1" ${task.status === 1 ? 'selected' : ''}>Not Started</option>
+              <option value="2" ${task.status === 2 ? 'selected' : ''}>In Progress</option>
+              <option value="3" ${task.status === 3 ? 'selected' : ''}>Completed</option>
+          </select>
+      </div>
+      `;
+      taskList.appendChild(taskItem);
+  });
 
-    attachCancelButtonListeners();
-    deleteButtonListeners(); 
+  // Attaches event listeners for canceling tasks and handling status updates.
+  attachCancelButtonListeners();
+  deleteButtonListeners();
 }
 
+// Attaches click event listeners to cancel buttons for task removal.
 function attachCancelButtonListeners() {
-    
-    const taskList = document.querySelector('.task-list');
-    taskList.addEventListener('click', (event) => {
-        if (event.target.classList.contains('cancel-button')) {
-            const taskItem = event.target.closest("div.task-item-Medium, div.task-item-High, div.task-item-Low");
-            if (taskItem) {
-                const details = taskItem.querySelector("#toDelete");
-                const taskList = document.querySelector('.task-list');
-                taskList.removeChild(taskItem);
-                fetch(`http://35.225.30.86:8080/api/tasks/${details.textContent}`,{
-                    method: `DELETE`
-                }).then(response => {
-                if (response.ok) {
-                    ;
-                } else {
-                    throw new Error('Failed to delete task');
-                }
-                 })
-                .catch(error => {
-                    console.error('Error:', error);
-                });
-}
-            
-        }
-    });
+  const taskList = document.querySelector('.task-list');
+  taskList.addEventListener('click', (event) => {
+      if (event.target.classList.contains('cancel-button')) {
+          const taskItem = event.target.closest("div.task-item-Medium, div.task-item-High, div.task-item-Low");
+          if (taskItem) {
+              const details = taskItem.querySelector("#toDelete");
+              const taskList = document.querySelector('.task-list');
+              taskList.removeChild(taskItem); // Removes task from DOM
+              
+              // Sends a DELETE request to remove the task from the server.
+              fetch(`http://35.225.30.86:8080/api/tasks/${details.textContent}`, {
+                  method: `DELETE`
+              }).then(response => {
+                  if (!response.ok) {
+                      throw new Error('Failed to delete task');
+                  }
+              }).catch(error => {
+                  console.error('Error:', error);
+              });
+          }
+      }
+  });
 }
 
+// Attaches change event listeners to the task status dropdowns for updating task status.
 function deleteButtonListeners() {
-const taskList = document.querySelector('.task-list');
+  const taskList = document.querySelector('.task-list');
+  
+  taskList.addEventListener('change', (event) => {
+      if (event.target.classList.contains('status-button')) {
+          const taskItem = event.target.closest("div.task-item-Medium, div.task-item-High, div.task-item-Low");
+          if (taskItem) {
+              const taskId = taskItem.querySelector("#toDelete").textContent.trim();
+              const statusValue = event.target.value; // Get selected status
 
-taskList.addEventListener('change', (event) => {
-if (event.target.classList.contains('status-button')) {
-    const taskItem = event.target.closest("div.task-item-Medium, div.task-item-High, div.task-item-Low");
-    if (taskItem) {
-        const taskId = taskItem.querySelector("#toDelete").textContent.trim();
-        const statusValue = event.target.value; 
+              const updateData = {
+                  taskID: taskId,
+                  status: parseInt(statusValue), // Convert to integer for the API
+              };
 
-        const updateData = {
-            taskID: taskId,
-            status: parseInt(statusValue), 
-        };
-
-        updateTask(updateData);
-        
-            getTasks(1);
-    }
+              // Calls updateTask function to send updated status to the server.
+              updateTask(updateData);
+              // Refreshes the task list by re-fetching tasks.
+              getTasks(1);
+          }
+      }
+  });
 }
 
-});
-
-}
 
 function displayCalendarView(tasks, year, month) {
     tasks = tasks || [];
