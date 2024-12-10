@@ -339,9 +339,16 @@ listView.classList.toggle("hidden");
 
 const fs = require('fs');
 const path = require('path');
-// TODO: delete once login functioning
-const userId = 1;
 
+/**
+ * Fetches all reminders from the API.
+ * 
+ * This asynchronous function sends a GET request to the API endpoint to retrieve all reminders.
+ * If the request is successful, it returns the reminders as a JSON object. If an error occurs during the request, 
+ * it logs the error to the console and returns an empty array.
+ * 
+ * @returns {Array} An array of reminders if the request is successful, or an empty array if an error occurs.
+ */
 async function getReminders() {
   try {
     const response = await fetch(`http://35.225.30.86:8080/api/reminders/`);
@@ -356,6 +363,19 @@ async function getReminders() {
   }
 }
 
+/**
+ * Generates HTML content for displaying a list of reminders.
+ * 
+ * Takes an array of reminder objects and generates HTML for each reminder. 
+ * It fetches the user's tasks, and for each reminder, it finds the associated task 
+ * based on the `taskID`. The function then generates HTML with reminder details (task title, reminder time, and creation time), 
+ * and includes a delete button that calls the `deleteReminder` function when clicked.
+ * 
+ * If no reminders are available, it returns a message saying "No reminders available."
+ * 
+ * @param {Array} reminders - An array of reminder objects to display.
+ * @returns {string} A string of HTML content representing the list of reminders, or a message if no reminders are found.
+ */
 async function generateReminderHTML(reminders) {
   let htmlContent = '';
   const tasks = await getTasksByUserId(userId);
@@ -378,6 +398,16 @@ async function generateReminderHTML(reminders) {
   return htmlContent || '<p>No reminders available.</p>';
 }
 
+/**
+ * Fetches tasks associated with a specific user by their user ID.
+ * 
+ * Sends a GET request to the API endpoint to retrieve the tasks for the given user ID.
+ * If the request is successful, it returns the tasks as a JSON object. If the request fails or an error occurs,
+ * it logs the error to the console and returns an empty array.
+ * 
+ * @param {string} id - The ID of the user whose tasks are to be fetched.
+ * @returns {Array} An array of tasks, or an empty array if an error occurs.
+ */
 async function getTasksByUserId(id) {
   try {
     const response = await fetch(`http://35.225.30.86:8080/api/tasks/${id}`);
@@ -392,19 +422,16 @@ async function getTasksByUserId(id) {
   }
 }
 
-function getWebViewContent(panel) {
-  try {
-    const filePath = path.join(__dirname, 'htdocs', 'reminder-list.html');
-    const content = fs.readFileSync(filePath, 'utf8');
-    const scriptUri = panel.webview.asWebviewUri(vscode.Uri.file(path.join(__dirname, 'reminders.js')));
-    
-    return content.replace('</body>', `<script src="${scriptUri}"></script></body>`);
-  } catch (error) {
-    console.error("Error reading the file:", error);
-    return `<html><body><h1>Error loading content</h1><p>${error.message}</p></body></html>`;
-  }
-}
-
+/**
+ * Displays a pop-up menu for adding a new reminder.
+ * It first fetches the list of tasks for a specific user from the server.
+ * If the request is successful, it creates a new pop-up form for adding a reminder, with a dropdown for selecting a task, 
+ * and fields for entering a reminder date and time. The task options are retrieved from the fetched tasks.
+ * It then appends the pop-up to the document body and sets up event listeners:
+ * - A "submit" event listener on the form triggers the addReminder function to save the reminder.
+ * - A "click" event listener on the cancel button removes the pop-up from the DOM.
+ * If an error occurs during the fetching of tasks or the process of displaying the form, it logs the error to the console.
+ */
 async function showAddMenu() {
  const userId = 1;
   try {
@@ -459,6 +486,15 @@ async function showAddMenu() {
   }
 }
 
+
+/**
+ * This function handles the process of adding a new reminder. If all required fields are provided, it creates a new reminder object using the createReminder function.
+ * The function then sends a POST request to the server to add the reminder.
+ * it then reloads the Visual Studio Code window to repopulate the reminders list and closes the pop-up form.
+ * If an error occurs during the request, it logs the error to the console.
+ * @param {Event} event - The event object for the form submission, used to prevent default form behavior.
+ * @param {HTMLElement} addPopUp - The pop-up element to be removed after the reminder is added.
+ */
 async function addReminder(event, addPopUp) {
     event.preventDefault();
     const taskId = document.querySelector("#taskSelect").value;
@@ -475,7 +511,7 @@ async function addReminder(event, addPopUp) {
           },
           body: JSON.stringify(newReminder),
         });
-        // TODO: update HTML
+        vscode.commands.executeCommand('workbench.action.reloadWindow');
       } catch (error) {
         console.log(error);
       }
@@ -483,15 +519,38 @@ async function addReminder(event, addPopUp) {
     }
   }
 
+
+/**
+ * Creates a reminder object with a formatted reminder time.
+ * 
+ * This function takes in a taskId, reminderDate, and reminderTime, and returns an object 
+ * containing the taskId and a reminder_time, which is a formatted string in the "YYYY-MM-DD HH:MM:SS" format.
+ * It combines the reminderDate and reminderTime into a datetime object.
+ * 
+ * @param {string} taskId - The ID of the task associated with the reminder.
+ * @param {string} reminderDate - The date of the reminder in "YYYY-MM-DD" format.
+ * @param {string} reminderTime - The time of the reminder in "HH:MM" format.
+ * @returns {Object} An object containing the taskId and the formatted reminder time as a string.
+ */
 function createReminder(taskId, reminderDate, reminderTime) {
   let reminderDateTime = new Date(`${reminderDate}T${reminderTime}:00`);
-  reminderDateTime.setHours(reminderDateTime.getHours()); // i wish i knew why the db is adding 5 hours to anything i add, but because i dont, this will have to do.
+  reminderDateTime.setHours(reminderDateTime.getHours());
   reminderDateTime = reminderDateTime.toISOString().slice(0, 19).replace("T", " ");
   return {
     taskID: taskId,
     reminder_time: reminderDateTime,
   };
 }
+
+/**
+ * Deletes a reminder by its ID by making a DELETE request to the API endpoint.
+ * 
+ * After successfully deleting the reminder, it triggers a Visual Studio Code command to reload the window 
+ * in order to refresh the list of reminders.
+ * If an error occurs during the request, it logs the error to the console.
+ * 
+ * @param {string} reminderId - The ID of the reminder to be deleted.
+ */
 
 async function deleteReminder(reminderId) {
   try {
@@ -501,12 +560,23 @@ async function deleteReminder(reminderId) {
         "Content-Type": "application/json",
       },
     });
-      // TODO: update HTML
+    vscode.commands.executeCommand('workbench.action.reloadWindow');
   } catch (error) {
     console.log(error);
   }
 }
 
+/**
+ * Checks for reminders associated with a specific user ID.
+ * 
+ * It retrieves the current date, the tasks for the user, and all reminder data.
+ * The function iterates through the reminders and matches them with the user's tasks by comparing task IDs.
+ * If a reminder's time has passed (current date is greater than or equal to the reminder time),
+ * it deletes the reminder by calling the deleteReminder function and returns the associated task.
+ * If no reminders are found or none are due, the function does not return anything.
+ * 
+ * @param {string} userId - The ID of the user whose reminders and tasks are to be checked.
+ */
 async function checkForReminders(userId) {
   let currentDate = new Date();
   let tasks = await getTasksByUserId(1);
@@ -524,6 +594,15 @@ async function checkForReminders(userId) {
   }
 }
 
+/**
+ * Toggles the visibility of the reminder list in the `task-view.html` page.
+ * 
+ * The function checks if the class list of the reminder list element contains the string "hidden".
+ * - If the "hidden" class is present, it removes it, making the reminder list visible, 
+ *   and also adds the class to the other two views to hide them.
+ * - If the "hidden" class is not present, it adds it to the reminder list, hiding it from view, 
+ *   and un-hides the tasks.
+ */
 async function toggleReminderView() {
   const listView = document.querySelector('.task-container');
   const calendarView = document.querySelector('.task-container-calendar-view');
@@ -540,13 +619,4 @@ async function toggleReminderView() {
       }
       listView.classList.remove('hidden');
   }
-}
-
-async function showReminders(){
-  let remindersData = await reminders.getReminders();
-  let reminderHTML = await reminders.generateReminderHTML(remindersData);
-  let reminderContainer = document.querySelector(".reminder-container");
-  let reminders = document.createElement("div");
-  reminders.htmlContent = reminderHTML;
-  reminderContainer.appendChild(reminders);
 }
