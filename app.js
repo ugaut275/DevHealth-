@@ -146,160 +146,189 @@ function deleteButtonListeners() {
 }
 
 
+/**
+ * Renders a calendar view for a specific month and year, displaying tasks
+ * on their due dates. Includes navigation buttons for browsing months
+ * within a one-year range from the current date.
+ */
 function displayCalendarView(tasks, year, month) {
-    tasks = tasks || [];
+  // Initialize tasks as an empty array if no tasks are provided
+  tasks = tasks || [];
 
-    const currentDate = new Date();
-    const currentYear = currentDate.getFullYear();
-    const currentMonth = currentDate.getMonth();
-    const currentAbs = currentYear * 12 + currentMonth;
-    const displayedAbs = year * 12 + month;
-    if (displayedAbs < currentAbs - 12 || displayedAbs > currentAbs + 12) {
-        return;
-    }
+  // Get the current date to calculate limits for navigation
+  const currentDate = new Date();
+  const currentYear = currentDate.getFullYear();
+  const currentMonth = currentDate.getMonth();
 
-    const calendarContainer = document.querySelector('.task-list-calendar');
-    calendarContainer.innerHTML = '';
+  // Calculate absolute month values for range comparisons
+  const currentAbs = currentYear * 12 + currentMonth;
+  const displayedAbs = year * 12 + month;
 
-    const monthNames = ["January", "February", "March", "April", "May", "June", 
-                        "July", "August", "September", "October", "November", "December"];
+  // Prevent navigation outside the range of 1 year before/after the current month
+  if (displayedAbs < currentAbs - 12 || displayedAbs > currentAbs + 12) {
+      return;
+  }
 
-    const calendarHeader = document.createElement('h2');
-    calendarHeader.textContent = `${monthNames[month]} ${year}`;
-    calendarContainer.appendChild(calendarHeader);
+  // Select the container for the calendar and clear its content
+  const calendarContainer = document.querySelector('.task-list-calendar');
+  calendarContainer.innerHTML = '';
 
-    const navContainer = document.createElement('div');
-    navContainer.classList.add('calendar-nav');
+  // Array of month names for easy header display
+  const monthNames = ["January", "February", "March", "April", "May", "June", 
+                      "July", "August", "September", "October", "November", "December"];
 
-    const prevBtn = document.createElement('button');
-    prevBtn.textContent = 'Prev';
-    prevBtn.classList.add('date-view-button');
-    prevBtn.addEventListener('click', () => {
-        let newYear = displayedYear;
-        let newMonth = displayedMonth - 1;
-        if (newMonth < 0) {
-            newMonth = 11;
-            newYear -= 1;
-        }
-        let newAbs = newYear * 12 + newMonth;
-        if (newAbs >= currentYear * 12 + currentMonth - 12) {
-            displayedYear = newYear;
-            displayedMonth = newMonth;
-            displayCalendarView(window.allTasks, displayedYear, displayedMonth);
-        }
-    });
+  // Add a header showing the current month and year
+  const calendarHeader = document.createElement('h2');
+  calendarHeader.textContent = `${monthNames[month]} ${year}`;
+  calendarContainer.appendChild(calendarHeader);
 
-    const nextBtn = document.createElement('button');
-    nextBtn.textContent = 'Next';
-    nextBtn.classList.add('date-view-button');
-    nextBtn.addEventListener('click', () => {
-        let newYear = displayedYear;
-        let newMonth = displayedMonth + 1;
-        if (newMonth > 11) {
-            newMonth = 0;
-            newYear += 1;
-        }
-        let newAbs = newYear * 12 + newMonth;
-        if (newAbs <= currentYear * 12 + currentMonth + 12) {
-            displayedYear = newYear;
-            displayedMonth = newMonth;
-            displayCalendarView(window.allTasks, displayedYear, displayedMonth);
-        }
-    });
+  // Create navigation buttons for "Previous" and "Next" months
+  const navContainer = document.createElement('div');
+  navContainer.classList.add('calendar-nav');
 
-    navContainer.appendChild(prevBtn);
-    navContainer.appendChild(nextBtn);
-    calendarContainer.appendChild(navContainer);
+  const prevBtn = document.createElement('button');
+  prevBtn.textContent = 'Prev';
+  prevBtn.classList.add('date-view-button');
+  prevBtn.addEventListener('click', () => {
+      // Navigate to the previous month
+      let newYear = displayedYear;
+      let newMonth = displayedMonth - 1;
+      if (newMonth < 0) { // Wrap around to December of the previous year
+          newMonth = 11;
+          newYear -= 1;
+      }
+      const newAbs = newYear * 12 + newMonth;
+      // Only navigate if within the allowed range
+      if (newAbs >= currentYear * 12 + currentMonth - 12) {
+          displayedYear = newYear;
+          displayedMonth = newMonth;
+          displayCalendarView(window.allTasks, displayedYear, displayedMonth);
+      }
+  });
 
-    const firstDayOfMonth = new Date(year, month, 1).getDay(); 
-    const daysInMonth = new Date(year, month+1, 0).getDate();
+  const nextBtn = document.createElement('button');
+  nextBtn.textContent = 'Next';
+  nextBtn.classList.add('date-view-button');
+  nextBtn.addEventListener('click', () => {
+      // Navigate to the next month
+      let newYear = displayedYear;
+      let newMonth = displayedMonth + 1;
+      if (newMonth > 11) { // Wrap around to January of the next year
+          newMonth = 0;
+          newYear += 1;
+      }
+      const newAbs = newYear * 12 + newMonth;
+      // Only navigate if within the allowed range
+      if (newAbs <= currentYear * 12 + currentMonth + 12) {
+          displayedYear = newYear;
+          displayedMonth = newMonth;
+          displayCalendarView(window.allTasks, displayedYear, displayedMonth);
+      }
+  });
 
-    const table = document.createElement('table');
-    table.classList.add('calendar-table');
+  navContainer.appendChild(prevBtn);
+  navContainer.appendChild(nextBtn);
+  calendarContainer.appendChild(navContainer);
 
-    const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-    const headerRow = document.createElement('tr');
-    daysOfWeek.forEach(day => {
-        const th = document.createElement('th');
-        th.textContent = day;
-        headerRow.appendChild(th);
-    });
-    table.appendChild(headerRow);
+  // Calculate the first day of the month and total days in the month
+  const firstDayOfMonth = new Date(year, month, 1).getDay(); // Day of the week the month starts on
+  const daysInMonth = new Date(year, month + 1, 0).getDate(); // Total days in the month
 
-    const tasksByDate = {};
-    tasks.forEach(task => {
-        const dateKey = new Date(task.due_date).toDateString(); 
-        if (!tasksByDate[dateKey]) {
-            tasksByDate[dateKey] = [];
-        }
-        tasksByDate[dateKey].push(task);
-    });
+  // Create a table to represent the calendar grid
+  const table = document.createElement('table');
+  table.classList.add('calendar-table');
 
-    let date = 1;
-    for (let i = 0; i < 6; i++) {
-        const row = document.createElement('tr');
-        for (let j = 0; j < 7; j++) {
-            const cell = document.createElement('td');
-            if ((i === 0 && j < firstDayOfMonth) || date > daysInMonth) {
-                cell.classList.add('empty-cell');
-            } else {
-                cell.classList.add('calendar-day');
-                const cellDate = new Date(year, month, date);
-                const dateLabel = document.createElement('div');
-                dateLabel.classList.add('date-label');
-                dateLabel.textContent = date;
-                cell.appendChild(dateLabel);
+  // Add a header row for the days of the week
+  const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  const headerRow = document.createElement('tr');
+  daysOfWeek.forEach(day => {
+      const th = document.createElement('th');
+      th.textContent = day;
+      headerRow.appendChild(th);
+  });
+  table.appendChild(headerRow);
 
-                const tasksToday = tasksByDate[cellDate.toDateString()];
-                if (tasksToday && tasksToday.length > 0) {
-                    tasksToday.forEach(task => {
-                        const taskDiv = document.createElement('div');
-                        taskDiv.classList.add(`task-item-${task.priority}`, 'calendar-task-item');
-                        taskDiv.textContent = task.title; 
-                        cell.appendChild(taskDiv);
-                    });
-                }
+  // Group tasks by their due date for easy lookup
+  const tasksByDate = {};
+  tasks.forEach(task => {
+      const dateKey = new Date(task.due_date).toDateString();
+      if (!tasksByDate[dateKey]) {
+          tasksByDate[dateKey] = [];
+      }
+      tasksByDate[dateKey].push(task);
+  });
 
-                date++;
-            }
-            row.appendChild(cell);
-        }
-        table.appendChild(row);
-        if (date > daysInMonth) break; 
-    }
+  // Populate the calendar with days and tasks
+  let date = 1;
+  for (let i = 0; i < 6; i++) {
+      const row = document.createElement('tr');
+      for (let j = 0; j < 7; j++) { // Each row has 7 columns (days of the week)
+          const cell = document.createElement('td');
+          if ((i === 0 && j < firstDayOfMonth) || date > daysInMonth) {
+              // Empty cells for days outside the current month
+              cell.classList.add('empty-cell');
+          } else {
+              // Display valid dates
+              cell.classList.add('calendar-day');
+              const cellDate = new Date(year, month, date);
 
-    calendarContainer.appendChild(table);
+              // Add the date label
+              const dateLabel = document.createElement('div');
+              dateLabel.classList.add('date-label');
+              dateLabel.textContent = date;
+              cell.appendChild(dateLabel);
+
+              // Display tasks due on this date
+              const tasksToday = tasksByDate[cellDate.toDateString()];
+              if (tasksToday && tasksToday.length > 0) {
+                  tasksToday.forEach(task => {
+                      const taskDiv = document.createElement('div');
+                      taskDiv.classList.add(`task-item-${task.priority}`, 'calendar-task-item');
+                      taskDiv.textContent = task.title; // Show task title
+                      cell.appendChild(taskDiv);
+                  });
+              }
+
+              date++; // Move to the next date
+          }
+          row.appendChild(cell);
+      }
+      table.appendChild(row);
+      if (date > daysInMonth) break; // Stop creating rows when the month ends
+  }
+
+  calendarContainer.appendChild(table); // Add the complete calendar table to the container
 }
 
+/**
+ * Toggles visibility between the calendar view and the task list view.
+ */
 function toggleCalendarView() {
-    const listView = document.querySelector('.task-container');
-    const calendarView = document.querySelector('.task-container-calendar-view');
-    const reminderView = document.querySelector('.reminder-container')
+  const listView = document.querySelector('.task-container'); // Task list container
+  const calendarView = document.querySelector('.task-container-calendar-view'); // Calendar view container
+  const reminderView = document.querySelector('.reminder-container'); // Reminder view container
 
-    if (calendarView.classList.contains('hidden')) {
-        calendarView.classList.remove('hidden');
-        if (!listView.classList.contains('hidden')) {
-            listView.classList.add('hidden');
-        } if (!reminderView.classList.contains('hidden')) {
-            reminderView.classList.add('hidden');
-        }
-        displayCalendarView(window.allTasks || [], displayedYear, displayedMonth);
-    } else {
-        calendarView.classList.add('hidden');
-        if (!reminderView.classList.contains('hidden')) {
-        reminderView.classList.add('hidden');
-        }
-        listView.classList.remove('hidden');
-    }
+  if (calendarView.classList.contains('hidden')) {
+      calendarView.classList.remove('hidden'); // Show calendar view
+      listView.classList.add('hidden'); // Hide task list view
+      reminderView.classList.add('hidden'); // Hide reminder view
+      displayCalendarView(window.allTasks || [], displayedYear, displayedMonth);
+  } else {
+      calendarView.classList.add('hidden'); // Hide calendar view
+      listView.classList.remove('hidden'); // Show task list view
+      reminderView.classList.add('hidden'); // Ensure reminder view is hidden
+  }
 }
 
-
+/**
+ * Switches from the calendar view to the task form view.
+ */
 function openTaskFormView() {
-    const calendarView = document.querySelector('.task-container-calendar-view');
-    const viewList = document.querySelector('.task-container-hidden');
+  const calendarView = document.querySelector('.task-container-calendar-view'); // Calendar view container
+  const viewList = document.querySelector('.task-container-hidden'); // Task form container
 
-    calendarView.classList.add('hidden');
-    viewList.classList.remove('hidden');
+  calendarView.classList.add('hidden'); // Hide calendar view
+  viewList.classList.remove('hidden'); // Show task form
 }
 
 // Calendar view JS
