@@ -2,6 +2,9 @@
 
 DevHealth is a VSCode extension designed to help developers manage their tasks & reminders, to better organize and remind developers to take breaks in long coding sessions, all within the Visual Studio Code Environment.
 
+## Analysis & Initial Requirements
+https://docs.google.com/document/d/1ZHavQWi5vU0vXDPsnoxmVXyoeC1TcHtYkGoyr1kHXEw/edit?tab=t.0#heading=h.uxfnarxk9hvc
+
 ## Features
 
 ### 1. Login System 🖥️:
