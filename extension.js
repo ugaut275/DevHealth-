@@ -36,51 +36,85 @@ async function activate(context) {
     })
   );
 
-}
-  );
+    // Register the login command
+    context.subscriptions.push(
+      vscode.commands.registerCommand('testdevhealth.login', async function () {
+        const panel = vscode.window.createWebviewPanel(
+          'loginPage',
+          'Login - DevHealth',
+          vscode.ViewColumn.One,
+          { enableScripts: true }
+        );
   
-  context.subscriptions.push(
-    vscode.commands.registerCommand('testdevhealth.login', async function () {
-      const panel = vscode.window.createWebviewPanel(
-        'loginPage',
-        'Login - DevHealth',
-        vscode.ViewColumn.One,
-        { enableScripts: true }
-      );
+        panel.webview.html = getLoginPageContent(panel.webview, context.extensionUri);
   
-      panel.webview.html = getLoginPageContent(panel.webview, context.extensionUri);
+        panel.webview.onDidReceiveMessage(
+          (message) => {
+            if (message.command === "navigateToTaskList") {
+              panel.dispose();
+              vscode.commands.executeCommand("testdevhealth.viewTasks");
+            } else if (message.command === "navigateToCreateUser") {
+              panel.dispose();
+              vscode.commands.executeCommand("testdevhealth.createUser");
+            }
+          },
+          undefined,
+          context.subscriptions
+        );
+      })
+    );
+    
+    context.subscriptions.push(
+      vscode.commands.registerCommand('testdevhealth.createUser', async function() {
+        const panel = vscode.window.createWebviewPanel(
+          `createUser`,
+          `Create User - DevHealth`,
+          vscode.ViewColumn.One,
+          {enableScripts: true}
+        );
 
-      panel.webview.onDidReceiveMessage(
-        (message) => {
-          if (message.command === "navigateToTaskList"){
-            panel.dispose();
-            vscode.commands.executeCommand("testdevhealth.viewTasks");
-          }if (message.command === "navigateToCreateUser"){
-            panel.dispose();
-            vscode.commands.executeCommand("testdevhealth.createUser");
-          }
-        },
-        undefined,
-        context.subscriptions
-      );
-    })
-  );  
-}
+        panel.webview.html = getCreateUserPageContent(panel.webview,context.extensionUri);
 
+        panel.webview.onDidReceiveMessage(
 
-
-function getLoginPageContent(webview, extensionUri) {
-  try {
-    const filePath = vscode.Uri.joinPath(extensionUri, 'htdocs', 'login-page.html');
-    const loginHTML = fs.readFileSync(filePath.fsPath, 'utf8');
-    return loginHTML; 
-  } catch (error) {
-    console.error("Error reading the file:", error);
-    return `<html><body><h1>Error loading content</h1><p>${error.message}</p></body></html>`;
+          (message) => {
+            if(message.command === "navigateToLogin"){
+              panel.dispose();
+              vscode.commands.executeCommand("testdevhealth.login");
+            }
+          },
+          undefined,
+          context.subscriptions
+        );
+      })
+    );
+  
+    function getCreateUserPageContent(webview, extensionUri) {
+      try {
+        const filePath = vscode.Uri.joinPath(extensionUri, 'htdocs', 'new-user.html');
+        const loginHTML = fs.readFileSync(filePath.fsPath, 'utf8');
+        return loginHTML;
+      } catch (error) {
+        console.error("Error reading the login page file:", error);
+        return `<html><body><h1>Error loading content</h1><p>${error.message}</p></body></html>`;
+      }
+    }
+  
+  /**
+   * Get content for the login page
+   */
+  function getLoginPageContent(webview, extensionUri) {
+    try {
+      const filePath = vscode.Uri.joinPath(extensionUri, 'htdocs', 'login-page.html');
+      const loginHTML = fs.readFileSync(filePath.fsPath, 'utf8');
+      return loginHTML;
+    } catch (error) {
+      console.error("Error reading the login page file:", error);
+      return `<html><body><h1>Error loading content</h1><p>${error.message}</p></body></html>`;
+    }
   }
+
 }
-
-
 
 function getWebViewContent(panel) {
   try {
