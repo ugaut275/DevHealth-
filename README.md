@@ -1,65 +1,62 @@
-# testdevhealth README
+# DevHealth ✅
 
-This is the README for your extension "testdevhealth". After writing up a brief description, we recommend including the following sections.
+DevHealth is a VSCode extension designed to help developers manage their tasks & reminders, to better organize and remind developers to take breaks in long coding sessions, all within the Visual Studio Code Environment.
 
 ## Features
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
+### 1. Login System 🖥️:
+- Secure login functionality with a username and password
+- Authentication of users using hashed passwords
+![image](https://github.com/user-attachments/assets/dd6bad35-e254-4798-b16d-1e20ea810f24)
 
-For example if there is an image subfolder under your extension project workspace:
+### 2. Task Management 📋:
+- Ability to view, add, and manage tasks directly from the extension within VSCode
+- Organization of tasks by priority, status, and deadlines
+![image](https://github.com/user-attachments/assets/923354fc-8d07-4cce-aca1-c64921348d9b)
 
-\!\[feature X\]\(images/feature-x.png\)
+### 3. Reminders 🤞🏻:
+- Set and view reminders for important events or tasks, such as taking a break every 15 minutes
+- Notifications delivered within VSCode
+![image](https://github.com/user-attachments/assets/a7878d7b-d5b9-4e09-ac2e-74d598716aaf)
 
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+### 4. Calendar View 📅:
+- Tasks and reminders visible on a calendar feature
+- Ability to plan out tasks and reminders within a month or several months ahead. 
+![image](https://github.com/user-attachments/assets/bb642f8e-8266-4604-8c25-b8d1a4bdd059)
 
 ## Requirements
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+- Visual Studio Code (v1.95.0 or higher)
+- Node.js (v16 or higher) 
 
-## Extension Settings
+## Installation - Pre-Release of the Extension on the VSCode Market
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
+1. Clone the repository:
+   ```powershell
+   git clone https://github.com/ugaut275/DevHealth-.git
+2. Install dependencies:
+   ```powershell
+   npm install
+3. Open the project in Visual Studio Code
 
-For example:
-
-This extension contributes the following settings:
-
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
-
-## Known Issues
-
-Calling out known issues can help limit users opening duplicate issues against your extension.
+4. Launch the Extension
+- Open the **Run and Debug** view
+- **Ctrl+Shift+P** and click on the **testdevhealth:loginPage**
 
 ## Release Notes
 
-Users appreciate release notes as you update your extension.
-
 ### 1.0.0
 
-Initial release of ...
+Initial release of DevHealth, not on the VSCode market yet, installation and usage is explained above. 
 
-### 1.0.1
+## Future Features
+- **Advanced Analytics:** Track task completion rates and set productivity goals
+- **Team Collaboration:** Add team-based task management, reminders, and calendar views
 
-Fixed issue #.
+## Contributors 
+- Aleem Premji
+- Jose Sanchez
+- Utsav Gautum
+- Orlando Ormon
 
-### 1.1.0
-
-Added features X, Y, and Z.
-
----
-
-## Working with Markdown
-
-You can author your README using Visual Studio Code.  Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux)
-* Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux)
-* Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets
-
-## For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**
+**Enjoy!😁**
