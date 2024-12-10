@@ -1,3 +1,4 @@
+<!-- This html document is used for the login-page view to log users into the system-->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -23,12 +24,16 @@
 </body>
 
 <script>
+    //Retrieving a vscode object to manipulate the webview content
     const vscode = acquireVsCodeApi();
     
     const loginForm = document.querySelector("#loginForm");
     const newUser = document.querySelector("#createUserButton");
     const error = document.querySelector("#errorMessage");
 
+    /**
+     * Event listener for the form for the functionality of the login and redirecting the user to the task list if succesful, if not an error message will be displayed
+     */
     loginForm.addEventListener("submit", async (event) => {
 
     event.preventDefault();
@@ -36,6 +41,9 @@
     const username = document.querySelector("#username").value;
     const password = document.querySelector("#password").value;
     
+    /**
+     * API calls to retrieve user in the database by username, and also to verify whether a users password is correct.
+     */
     try {
         const response = await fetch(`http://35.225.30.86:8080/api/users/name/` + username);
         if(!response.ok){
@@ -53,7 +61,7 @@
         if(!isPasswordValid.ok){
             throw new Error("Invalid Password");
         }
-
+        //Way for VSCode to redirect you to the task-list page after logging in. 
         vscode.postMessage({ command: "navigateToTaskList"});
     } catch (error) {
         errorMessage.style.display = "block";
@@ -61,12 +69,17 @@
     }
     })
 
+    /**
+     * Event listener for the new user button so that it redirects you to the new-user page
+     */
     newUser.addEventListener("click", () => {
+        //Way for VSCode to redirect you to the new-user page 
         vscode.postMessage({command: "navigateToCreateUser" });
     });
 
 </script>
 
+<!--Styling for the login-page-->
 <style>
     body {
             font-family: 'Arial', sans-serif;

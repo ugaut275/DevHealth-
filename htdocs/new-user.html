@@ -1,3 +1,4 @@
+<!-- This html document is used for the new-user view to create new users-->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -26,11 +27,15 @@
 </body>
 
 <script>
+    //Retrieving a vscode object to manipulate the webview content
     const vscode = acquireVsCodeApi();
 
     const userForm = document.querySelector("#userForm");
     const backButton = document.querySelector(".back-button");
 
+    /**
+     * Event listener for the form to use POST api for users to create a new user when user presses the submit button. 
+     **/
     userForm.addEventListener("submit", async (event) => {
         event.preventDefault();
 
@@ -38,6 +43,9 @@
         const newPassword = document.querySelector("#password").value;
         const newEmail = document.querySelector("#email").value;
 
+        /**
+         * API call to create a new user using the values inputted in the form
+         */
         try {
             const response = await fetch("http://35.225.30.86:8080/api/users",{
                 method: "POST",
@@ -59,6 +67,7 @@
             const result = await response.json();
             alert("Successful!");
 
+            //Way for VSCode to redirect you to the the login page after creating a new user 
             vscode.postMessage({command:"navigateToLogin"});
 
         } catch (error) {
@@ -66,11 +75,16 @@
         }
     });
 
+    /**
+     * Event listener for the back button so that if a user does not want to create a new user they can go back to the login page. 
+     */
     backButton.addEventListener("click", () => {
+        //Way for VSCode to redirect you to the login page Webview 
         vscode.postMessage({command: "navigateToLogin"});
     });
 </script>
 
+<!--Styling for the new-user page-->
 <style>
     body {
             font-family: 'Arial', sans-serif;
